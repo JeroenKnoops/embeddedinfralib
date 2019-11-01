@@ -1,0 +1,25 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: configure
+      run: |
+        cmake -E make_directory Build
+        cd Build
+        cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+        if [[ $STATIC_ANALYSIS ]]; then build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config ${BUILD_TYPE}; else cmake --build . --config ${BUILD_TYPE}; fi
+        ctest -C ${BUILD_TYPE} -T Test --output-on-failure
+        if [[ $STATIC_ANALYSIS ]]; then cd .. && sonar-scanner; fi
+      env:
+        BUILD_TYPE: Debug
+        CMAKE_BUILD_PARALLEL_LEVEL: 4
+        GTEST_COLOR: 1
+        MATRIX_EVAL: "CC=gcc-5 && CXX=g++-5"
+        STATIC_ANALYSIS: 1
