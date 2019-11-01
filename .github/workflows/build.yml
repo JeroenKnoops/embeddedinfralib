@@ -8,11 +8,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v1
       with: 
         fetch-depth: 1
+    - name: install
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install g++-5
     - name: build
       run: |
         cmake -E make_directory Build
